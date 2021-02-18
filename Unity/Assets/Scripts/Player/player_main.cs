@@ -11,31 +11,34 @@ public class player_main : MonoBehaviour
 
     #region External Components
     Grid grid;
+
+    gridSense gridSense;
     #endregion
 
     #region Core Functions
     void Start()
     {
+        gridSense = FindObjectOfType<gridSense>();
         grid = FindObjectOfType<Grid>();
-        positionX = 0.5f;
-        positionY = 0.5f;
+        positionX = 0f;
+        positionY = 0f;
     }
     void Update()
     {
-        gameObject.transform.position = new Vector2(positionX, positionY);
-        if (Input.GetKeyDown(KeyCode.W))
+        gameObject.GetComponent<Rigidbody2D>().MovePosition(new Vector2(positionX, positionY));
+        if (Input.GetKeyDown(KeyCode.W) && gridSense.topMid.isWall == false)
         {
             positionY += grid.cellSize.y;
         }
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.S) && gridSense.botMid.isWall == false)
         {
             positionY -= grid.cellSize.y;
         }
-        if (Input.GetKeyDown(KeyCode.D))
+        if (Input.GetKeyDown(KeyCode.D) && gridSense.midRight.isWall == false)
         {
             positionX += grid.cellSize.x;
         }
-        if (Input.GetKeyDown(KeyCode.A))
+        if (Input.GetKeyDown(KeyCode.A) && gridSense.midLeft.isWall == false)
         {
             positionX -= grid.cellSize.x;
         }
