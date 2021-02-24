@@ -5,6 +5,7 @@ using UnityEngine.Tilemaps;
 
 public class GridField : MonoBehaviour
 {
+    public bool displayGridGizmos;
     public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
@@ -16,13 +17,20 @@ public class GridField : MonoBehaviour
 
     public Tilemap unwalkableMap;
 
-    private void Start()
+    private void Awake()
     {
         unwalkableMask = LayerMask.GetMask("unwalkable");
         nodeDiameter = nodeRadius * 2;
         gridSizeX =Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
         CreateGrid();
+    }
+    public int MaxSize
+    {
+        get
+        {
+            return gridSizeX * gridSizeY;
+        }
     }
     void CreateGrid()
     {
@@ -70,23 +78,14 @@ public class GridField : MonoBehaviour
         return grid[x, y];
     }
 
-    public List<PathNode> path;
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, gridWorldSize.y));
-
-        if (grid!=null)
+        if (grid != null && displayGridGizmos == true)
         {
             foreach (PathNode n in grid)
             {
-                Gizmos.color = (n.isWalkable) ? Color.white:Color.red;
-                if (path != null)
-                {
-                    if (path.Contains(n))
-                    {
-                        Gizmos.color = Color.black;
-                    }
-                }
+                Gizmos.color = (n.isWalkable) ? Color.white : Color.red;
                 Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
             }
         }
