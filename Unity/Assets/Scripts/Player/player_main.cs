@@ -164,7 +164,7 @@ public class player_main : MonoBehaviour
     void damageEnemy(gridSensor sensor, float attackValue)
     {
         sensor.enemy.damageEnemy(attackValue);
-        Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.4f);
+        Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.2f);
         StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
     }
     #endregion

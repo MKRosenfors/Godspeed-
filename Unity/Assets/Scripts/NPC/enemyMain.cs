@@ -47,6 +47,10 @@ public class enemyMain : MonoBehaviour
     public void ExecuteAI(int i)
     {
         FindPathToClosestVisibleTarget();
+        if (currentTarget != null)
+        {
+            AlignToTarget();
+        }
         Move();
     }
     public void AddTarget(GameObject newTarget)
@@ -109,6 +113,17 @@ public class enemyMain : MonoBehaviour
             transform.position = pathToTarget[0];
             sprite.transform.position = origPos;
             StartCoroutine(tools.MoveTo(sprite.transform, pathToTarget[0], spriteFollowSpeed));
+        }
+    }
+    void AlignToTarget()
+    {
+        if (currentTarget.transform.position.x < transform.position.x)
+        {
+            sprite.GetComponent<SpriteRenderer>().flipX = true;
+        }
+        else
+        {
+            sprite.GetComponent<SpriteRenderer>().flipX = false;
         }
     }
 
