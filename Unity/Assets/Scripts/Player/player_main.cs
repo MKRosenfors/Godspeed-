@@ -5,6 +5,9 @@ using UnityEngine;
 public class player_main : MonoBehaviour
 {
     #region Variables
+    public float spriteFollowSpeed;
+    public float attackSpriteSpeed;
+    public bool isMyTurn;
     float positionX;
     float positionY;
 
@@ -15,11 +18,16 @@ public class player_main : MonoBehaviour
     string className;
     int level;
     int experiencePoints;
+
+    Vector2 positionChange;
+    string turnActionInput;
     #endregion
 
     #region External Components
     Grid grid;
     gameManager gm;
+    GameObject sprite;
+    GameObject cameraObject;
 
     gridSense gridSense;
     #endregion
@@ -27,18 +35,24 @@ public class player_main : MonoBehaviour
     #region Core Functions
     void Start()
     {
+        turnActionInput = null;
         initializeCharacter();
+        cameraObject = GetComponentInChildren<Camera>().gameObject;
+        sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         gm = FindObjectOfType<gameManager>();
         gridSense = FindObjectOfType<gridSense>();
         grid = FindObjectOfType<Grid>();
-        positionX = 0f;
-        positionY = 0f;
+        positionX = transform.position.x;
+        positionY = transform.position.y;
     }
     void Update()
     {
-        Vector2 startPos = transform.position;
-        checkMove();
-        gameObject.GetComponent<Rigidbody2D>().MovePosition(new Vector2(positionX, positionY));
+        checkInput();
+        if (isMyTurn == true && turnActionInput != null)
+        {
+            ExecuteTurn();
+            turnActionInput = null;
+        }
     }
     #endregion
 
@@ -53,66 +67,105 @@ public class player_main : MonoBehaviour
         dexterity = character_static.dexterity;
         intelligence = character_static.intelligence;
     }
-    void checkMove()
+
+    void ExecuteTurn()
+    {
+        if (turnActionInput == "skip")
+        {
+
+        }
+        if (turnActionInput == "move")
+        {
+            Move(positionChange);
+        }
+        if (turnActionInput == "attack")
+        {
+
+        }
+        gm.PassTurnTo("environment");
+    }
+    void Move(Vector3 changeVector)
+    {
+        Vector3 newPos = transform.position + changeVector;
+        transform.position = newPos;
+        gameObject.GetComponent<Rigidbody2D>().MovePosition(newPos);
+
+        sprite.transform.position = newPos - changeVector;
+        cameraObject.transform.position = new Vector3(newPos.x - changeVector.x, newPos.y - changeVector.y, -10);
+        StartCoroutine(tools.MoveTo(sprite.transform, newPos, spriteFollowSpeed));
+        StartCoroutine(tools.MoveTo(cameraObject.transform, new Vector3(newPos.x, newPos.y, -10), spriteFollowSpeed));
+    }
+    void checkInput()
     {
         if (Input.GetKeyDown(KeyCode.W) && gridSense.topMid.isWall == false)
         {
             if (gridSense.topMid.isEnemy == true)
             {
+                turnActionInput = "attack";
                 damageEnemy(gridSense.topMid, 1);
             }
             else
             {
-                positionY += grid.cellSize.y;
+                positionChange.x = 0;
+                positionChange.y = 1;
+                turnActionInput = "move";
             }
-            gm.passTurn();
         }
         if (Input.GetKeyDown(KeyCode.S) && gridSense.botMid.isWall == false)
         {
             if (gridSense.botMid.isEnemy == true)
             {
+                turnActionInput = "attack";
                 damageEnemy(gridSense.botMid, 1);
             }
             else
             {
-                positionY -= grid.cellSize.y;
+                positionChange.x = 0;
+                positionChange.y = -1;
+                turnActionInput = "move";
             }
-            gm.passTurn();
         }
         if (Input.GetKeyDown(KeyCode.D) && gridSense.midRight.isWall == false)
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().flipX = false;
             if (gridSense.midRight.isEnemy == true)
             {
+                turnActionInput = "attack";
                 damageEnemy(gridSense.midRight, 1);
             }
             else
             {
-                positionX += grid.cellSize.x;
+                positionChange.x = 1;
+                positionChange.y = 0;
+                turnActionInput = "move";
             }
-            gm.passTurn();
         }
         if (Input.GetKeyDown(KeyCode.A) && gridSense.midLeft.isWall == false)
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().flipX = true;
             if (gridSense.midLeft.isEnemy == true)
             {
+                turnActionInput = "attack";
                 damageEnemy(gridSense.midLeft, 1);
             }
             else
             {
-                positionX -= grid.cellSize.x;
+                positionChange.x = -1;
+                positionChange.y = 0;
+                turnActionInput = "move";
             }
-            gm.passTurn();
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            gm.passTurn();
+            turnActionInput = "skip";
         }
+
     }
     void damageEnemy(gridSensor sensor, float attackValue)
     {
         sensor.enemy.damageEnemy(attackValue);
+        Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.4f);
+        StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
     }
     #endregion
 

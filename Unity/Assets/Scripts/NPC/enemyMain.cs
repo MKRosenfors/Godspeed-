@@ -5,24 +5,34 @@ using UnityEngine;
 public class enemyMain : MonoBehaviour
 {
     #region Variables
+    public float sightRange;
     public float hitPoints;
     public int blockChance;
-    
+    public float spriteFollowSpeed;
+
     public bool chasing;
     Vector2 position;
     Color damageState;
     float time;
+
+    List<GameObject> targets = new List<GameObject>();
+    GameObject currentTarget;
+    Vector3[] pathToTarget;
+    LayerMask mask;
     #endregion
 
     #region External Components
     Grid grid;
     player_main player;
 
+    GameObject sprite;
     #endregion
 
     #region Core Funtions
     void Start()
     {
+        sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
+        mask = LayerMask.GetMask("unwalkable");
         player = FindObjectOfType<player_main>();
         grid = FindObjectOfType<Grid>();
         position = transform.position;
@@ -30,43 +40,18 @@ public class enemyMain : MonoBehaviour
     void Update()
     {
         DamageColor();
-        CheckHealth();
     }
     #endregion
 
     #region Functions
-    public void ExecuteAI()
+    public void ExecuteAI(int i)
     {
+        FindPathToClosestVisibleTarget();
         Move();
     }
-    void Move()
+    public void AddTarget(GameObject newTarget)
     {
-        if (chasing == true)
-        {
-            if (Mathf.Abs(position.x - player.transform.position.x) >= Mathf.Abs(position.y - player.transform.position.y))
-            {
-                if (position.x - player.transform.position.x < 0)
-                {
-                    position.x += 1;
-                }
-                else
-                {
-                    position.x -= 1;
-                }
-            }
-            else
-            {
-                if (position.y - player.transform.position.y < 0)
-                {
-                    position.y += 1;
-                }
-                else
-                {
-                    position.y -= 1;
-                }
-            }
-            transform.position = position;
-        }
+        targets.Add(newTarget);
     }
     public void damageEnemy(float damage)
     {
@@ -84,13 +69,49 @@ public class enemyMain : MonoBehaviour
         }
 
     }
-    void CheckHealth()
+    void FindPathToClosestVisibleTarget()
     {
-        if (hitPoints <= 0)
+        for (int i = 0; i < targets.Count; i++)
         {
-            Destroy(gameObject);
+            if (Physics.Raycast(transform.position, targets[i].transform.position, Mathf.Infinity, mask) == false)
+            {
+                if (currentTarget != null)
+                {
+                    if ((targets[i].transform.position - transform.position).magnitude < (currentTarget.transform.position - transform.position).magnitude)
+                    {
+                        currentTarget = targets[i];
+                    }
+                }
+                else
+                {
+                    currentTarget = targets[i];
+                }
+            }
+        }
+        if (currentTarget!=null)
+        {
+            pathToTarget = Pathfinding.FindPath(transform.position, currentTarget.transform.position);
         }
     }
+    public void OnPathFound(Vector3[] newPath, bool pathSuccess)
+    {
+        if (pathSuccess)
+        {
+            print(newPath.Length);
+            pathToTarget = newPath;
+        }
+    }
+    void Move()
+    {
+        if (pathToTarget!=null && pathToTarget.Length != 0)
+        {
+            Vector2 origPos = transform.position;
+            transform.position = pathToTarget[0];
+            sprite.transform.position = origPos;
+            StartCoroutine(tools.MoveTo(sprite.transform, pathToTarget[0], spriteFollowSpeed));
+        }
+    }
+
     void DamageColor()
     {
         if (time > Time.time)

@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 6569850925564743468}
   - component: {fileID: 6569850925564743469}
   - component: {fileID: 6569850925564743471}
-  - component: {fileID: 6569850925564743470}
   m_Layer: 0
   m_Name: PathingManager
   m_TagString: Untagged
@@ -46,7 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   displayGridGizmos: 0
-  player: {fileID: 0}
   unwalkableMask:
     serializedVersion: 2
     m_Bits: 256
@@ -63,17 +61,5 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73ec10491f40e0845972ed9b103b9f3f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &6569850925564743470
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6569850925564743466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19782b922e011a34e85e3ab57009ce5e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

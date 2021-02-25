@@ -6,43 +6,68 @@ public class gameManager : MonoBehaviour
 {
     #region Variables
     private GameObject[] npcArray;
-    private enemyMain[] enemies;
+    private List<enemyMain> enemies;
 
+    string passTurn;
     #endregion
     #region External Components
+    player_main player;
 
     #endregion
     #region Core Functions
     void Start()
     {
-        initializeArrays();
+        InitializeArrays();
+        player = FindObjectOfType<player_main>();
+        passTurn = "player";
     }
-    void Update()
+    void LateUpdate()
     {
-
+        CheckDeath();
+        if (passTurn == "environment")
+        {
+            ExecuteNPCAI();
+            PassTurnTo("player");
+        }
+        if (passTurn == "player")
+        {
+            player.isMyTurn = true;
+        }
     }
     #endregion
     #region Functions
-    void initializeArrays()
+    void InitializeArrays()
     {
         npcArray = GameObject.FindGameObjectsWithTag("enemy");
 
-        enemies = new enemyMain[npcArray.Length];
+        enemies = new List<enemyMain>();
 
         for (int i = 0; i < npcArray.Length; i++)
         {
-            enemies[i] = npcArray[i].GetComponent<enemyMain>();
+            enemies.Add(npcArray[i].GetComponent<enemyMain>());
         }
     }
-    public void passTurn()
+    public void PassTurnTo(string turnName)
     {
-        executeNPCAI();
+        passTurn = turnName;
     }
-    void executeNPCAI()
+    void ExecuteNPCAI()
     {
         foreach (enemyMain npc in enemies)
         {
-            npc.ExecuteAI();
+            npc.ExecuteAI(1);
+        }
+    }
+    void CheckDeath()
+    {
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            if (enemies[i].hitPoints <= 0)
+            {
+                GameObject deadObject = enemies[i].gameObject;
+                enemies.Remove(enemies[i]);
+                Destroy(deadObject);
+            }
         }
     }
     #endregion

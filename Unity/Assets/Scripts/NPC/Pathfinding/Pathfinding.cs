@@ -6,19 +6,14 @@ using System;
 
 public class Pathfinding : MonoBehaviour
 {
-    PathRequestManager requestManager;
+    static Pathfinding instance;
     GridField grid;
     private void Awake()
     {
-        requestManager = GetComponent<PathRequestManager>();
+        instance = this;
         grid = GetComponent<GridField>();
     }
-    public void StartFindPath(Vector3 startPosition, Vector3 endPosition)
-    {
-        StartCoroutine(FindPath(startPosition, endPosition));
-    }
-
-    IEnumerator FindPath(Vector3 startPos, Vector3 targetPos)
+    public static Vector3[] FindPath(Vector3 startPos, Vector3 targetPos)
     {
         Stopwatch sw = new Stopwatch();
         sw.Start();
@@ -26,12 +21,12 @@ public class Pathfinding : MonoBehaviour
         Vector3[] waypoints = new Vector3[0];
         bool pathSuccess = false;
 
-        PathNode startNode = grid.NodeFromWorldPoint(startPos);
-        PathNode targetNode = grid.NodeFromWorldPoint(targetPos);
+        PathNode startNode = instance.grid.NodeFromWorldPoint(startPos);
+        PathNode targetNode = instance.grid.NodeFromWorldPoint(targetPos);
 
         if (startNode.isWalkable && targetNode.isWalkable)
         {
-            Heap<PathNode> openSet = new Heap<PathNode>(grid.MaxSize);
+            Heap<PathNode> openSet = new Heap<PathNode>(instance.grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
 
@@ -43,22 +38,21 @@ public class Pathfinding : MonoBehaviour
                 if (currentNode == targetNode)
                 {
                     sw.Stop();
-                    print("path found: " + sw.ElapsedMilliseconds + "ms");
                     pathSuccess = true;
                     break;
                 }
 
-                foreach (PathNode neighbour in grid.GetNeighbours(currentNode))
+                foreach (PathNode neighbour in instance.grid.GetNeighbours(currentNode))
                 {
                     if (!neighbour.isWalkable || closedSet.Contains(neighbour))
                     {
                         continue;
                     }
-                    int newMovementCostToNeighbour = currentNode.gCost + GetDistance(currentNode, neighbour);
+                    int newMovementCostToNeighbour = currentNode.gCost + instance.GetDistance(currentNode, neighbour);
                     if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains(neighbour))
                     {
                         neighbour.gCost = newMovementCostToNeighbour;
-                        neighbour.hCost = GetDistance(neighbour, targetNode);
+                        neighbour.hCost = instance.GetDistance(neighbour, targetNode);
                         neighbour.parent = currentNode;
                         if (!openSet.Contains(neighbour))
                         {
@@ -68,12 +62,15 @@ public class Pathfinding : MonoBehaviour
                 }
             }
         }
-        yield return null;
         if (pathSuccess)
         {
-            waypoints = RetracePath(startNode, targetNode);
+            waypoints = instance.RetracePath(startNode, targetNode);
+            return waypoints;
         }
-        requestManager.FinishedProcessingPath(waypoints, pathSuccess);
+        else
+        {
+            return null;
+        }
     }
 
     Vector3[] RetracePath(PathNode startNode, PathNode endNode)

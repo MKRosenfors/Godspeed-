@@ -71,8 +71,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f4fb9d44a1bfe984cb7ba9fc7264a8b6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sightRange: 0
   hitPoints: 3
   blockChance: 20
+  spriteFollowSpeed: 10
+  chasing: 0
 --- !u!1 &8942192297445495949
 GameObject:
   m_ObjectHideFlags: 0

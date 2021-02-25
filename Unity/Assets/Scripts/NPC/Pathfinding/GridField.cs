@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 public class GridField : MonoBehaviour
 {
     public bool displayGridGizmos;
-    public Transform player;
+    //public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
