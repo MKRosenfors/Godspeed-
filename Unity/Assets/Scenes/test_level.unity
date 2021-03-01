@@ -1227,6 +1227,16 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3131788474576040744, guid: a31e1516497f13745a1445231f82c527,
         type: 3}
+      propertyPath: hitPoints
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 3131788474576040744, guid: a31e1516497f13745a1445231f82c527,
+        type: 3}
+      propertyPath: blockChance
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3131788474576040744, guid: a31e1516497f13745a1445231f82c527,
+        type: 3}
       propertyPath: attackSpriteSpeed
       value: 7
       objectReference: {fileID: 0}
@@ -1248,12 +1258,12 @@ PrefabInstance:
     - target: {fileID: 3131788474576040747, guid: a31e1516497f13745a1445231f82c527,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.5
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 3131788474576040747, guid: a31e1516497f13745a1445231f82c527,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.5
+      value: -0.5
       objectReference: {fileID: 0}
     - target: {fileID: 3131788474576040747, guid: a31e1516497f13745a1445231f82c527,
         type: 3}
@@ -1358,6 +1368,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1888223979770470103, guid: c000cbe2b1fd19747983978f1496ad25,
+        type: 3}
+      propertyPath: attackSpriteSpeed
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 2615414676208342275, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}

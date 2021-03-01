@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class player_main : MonoBehaviour
+public class player_main : MonoBehaviour, IsDamagable
 {
     #region Variables
     public float spriteFollowSpeed;
@@ -10,7 +10,6 @@ public class player_main : MonoBehaviour
     public bool isMyTurn;
     float positionX;
     float positionY;
-
     float strength;
     float dexterity;
     float intelligence;
@@ -18,6 +17,11 @@ public class player_main : MonoBehaviour
     string className;
     int level;
     int experiencePoints;
+    
+    Color damageState;
+    public int blockChance;
+    public float hitPoints;
+    float time;
 
     Vector2 positionChange;
     string turnActionInput;
@@ -47,6 +51,7 @@ public class player_main : MonoBehaviour
     }
     void Update()
     {
+        DamageColor();
         checkInput();
         if (isMyTurn == true && turnActionInput != null)
         {
@@ -97,12 +102,16 @@ public class player_main : MonoBehaviour
     }
     void checkInput()
     {
+        if (Input.GetKeyDown(KeyCode.Mouse0))
+        {
+
+        }
         if (Input.GetKeyDown(KeyCode.W) && gridSense.topMid.isWall == false)
         {
             if (gridSense.topMid.isEnemy == true)
             {
                 turnActionInput = "attack";
-                damageEnemy(gridSense.topMid, 1);
+                attack(gridSense.topMid, 1);
             }
             else
             {
@@ -116,7 +125,7 @@ public class player_main : MonoBehaviour
             if (gridSense.botMid.isEnemy == true)
             {
                 turnActionInput = "attack";
-                damageEnemy(gridSense.botMid, 1);
+                attack(gridSense.botMid, 1);
             }
             else
             {
@@ -131,7 +140,7 @@ public class player_main : MonoBehaviour
             if (gridSense.midRight.isEnemy == true)
             {
                 turnActionInput = "attack";
-                damageEnemy(gridSense.midRight, 1);
+                attack(gridSense.midRight, 1);
             }
             else
             {
@@ -146,7 +155,7 @@ public class player_main : MonoBehaviour
             if (gridSense.midLeft.isEnemy == true)
             {
                 turnActionInput = "attack";
-                damageEnemy(gridSense.midLeft, 1);
+                attack(gridSense.midLeft, 1);
             }
             else
             {
@@ -161,11 +170,38 @@ public class player_main : MonoBehaviour
         }
 
     }
-    void damageEnemy(gridSensor sensor, float attackValue)
+    void attack(gridSensor sensor, float attackValue)
     {
-        sensor.enemy.damageEnemy(attackValue);
+        Attack basicAttack = new Attack(1, "melee", "physical");
+        sensor.attackableObject.GetComponent<IsDamagable>().Damage(basicAttack);
         Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.2f);
         StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
+    }
+    public void Damage(Attack incomingAttack)
+    {
+        int rnd = Random.Range(0, 101);
+        if (rnd > blockChance && incomingAttack.damageSource == "melee")
+        {
+            hitPoints -= incomingAttack.damageValue;
+            damageState = Color.red;
+            time = Time.time + 0.2f;
+        }
+        else
+        {
+            damageState = new Color(0, 0, 1f, 0.5f);
+            time = Time.time + 0.2f;
+        }
+    }
+    void DamageColor() // make this into a coroutine && abstract it
+    {
+        if (time > Time.time)
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().color = damageState;
+        }
+        else
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
+        }
     }
     #endregion
 

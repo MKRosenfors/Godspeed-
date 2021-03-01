@@ -10,7 +10,7 @@ public class gridSensor : MonoBehaviour
     #endregion
 
     #region External Components
-    public enemyMain enemy;
+    public GameObject attackableObject;
 
     #endregion
     private void OnTriggerEnter2D(Collider2D other)
@@ -21,7 +21,7 @@ public class gridSensor : MonoBehaviour
         }
         if (other.gameObject.CompareTag("enemy"))
         {
-            enemy = other.gameObject.GetComponent<enemyMain>();
+            attackableObject = other.gameObject;
             isEnemy = true;
         }
     }
@@ -33,7 +33,7 @@ public class gridSensor : MonoBehaviour
         }
         if (other.gameObject.CompareTag("enemy"))
         {
-            enemy = null;
+            attackableObject = null;
             isEnemy = false;
         }
     }

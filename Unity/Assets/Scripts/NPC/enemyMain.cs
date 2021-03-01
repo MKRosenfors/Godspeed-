@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class enemyMain : MonoBehaviour
+public class enemyMain : MonoBehaviour, IsDamagable
 {
     #region Variables
     public float sightRange;
     public float hitPoints;
     public int blockChance;
     public float spriteFollowSpeed;
+    public float attackSpriteSpeed;
 
     public bool chasing;
     Vector2 position;
@@ -46,56 +47,51 @@ public class enemyMain : MonoBehaviour
     #region Functions
     public void ExecuteAI(int i)
     {
-        FindPathToClosestVisibleTarget();
-        if (currentTarget != null)
+        currentTarget = FindClosestVisibleTarget();
+        if (targets != null && (targets[0].transform.position - transform.position).magnitude > 1.5)
         {
-            AlignToTarget();
+            if (currentTarget != null)
+            {
+                pathToTarget = Pathfinding.FindPath(transform.position, currentTarget.transform.position);
+                AlignToTarget();
+                Move();
+            }
         }
-        Move();
+        else if (currentTarget != null)
+        {
+            Attack basicAttack = new Attack(1, "melee", "physical");
+            currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
+            Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
+            StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
+        }
+
+        
     }
     public void AddTarget(GameObject newTarget)
     {
         targets.Add(newTarget);
     }
-    public void damageEnemy(float damage)
+    GameObject FindClosestVisibleTarget()
     {
-        int rnd = Random.Range(0, 101);
-        if (rnd > blockChance)
-        {
-            hitPoints -= damage;
-            damageState = Color.red;
-            time = Time.time + 0.2f;
-        }
-        else
-        {
-            damageState = new Color(0, 0, 1f, 0.5f);
-            time = Time.time + 0.2f;
-        }
-
-    }
-    void FindPathToClosestVisibleTarget()
-    {
+        GameObject target = null;
         for (int i = 0; i < targets.Count; i++)
         {
             if (Physics.Raycast(transform.position, targets[i].transform.position, Mathf.Infinity, mask) == false)
             {
-                if (currentTarget != null)
+                if (target != null)
                 {
-                    if ((targets[i].transform.position - transform.position).magnitude < (currentTarget.transform.position - transform.position).magnitude)
+                    if ((targets[i].transform.position - transform.position).magnitude < (target.transform.position - transform.position).magnitude)
                     {
-                        currentTarget = targets[i];
+                        target = targets[i];
                     }
                 }
                 else
                 {
-                    currentTarget = targets[i];
+                    target = targets[i];
                 }
             }
         }
-        if (currentTarget!=null)
-        {
-            pathToTarget = Pathfinding.FindPath(transform.position, currentTarget.transform.position);
-        }
+        return target;
     }
     public void OnPathFound(Vector3[] newPath, bool pathSuccess)
     {
@@ -126,8 +122,22 @@ public class enemyMain : MonoBehaviour
             sprite.GetComponent<SpriteRenderer>().flipX = false;
         }
     }
-
-    void DamageColor()
+    public void Damage(Attack incomingAttack)
+    {
+        int rnd = Random.Range(0, 101);
+        if (rnd > blockChance && incomingAttack.damageSource == "melee")
+        {
+            hitPoints -= incomingAttack.damageValue;
+            damageState = Color.red;
+            time = Time.time + 0.2f;
+        }
+        else
+        {
+            damageState = new Color(0, 0, 1f, 0.5f);
+            time = Time.time + 0.2f;
+        }
+    }
+    void DamageColor() // make this into a coroutine
     {
         if (time > Time.time)
         {
