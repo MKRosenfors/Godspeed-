@@ -24,7 +24,7 @@ public class Pathfinding : MonoBehaviour
         PathNode startNode = instance.grid.NodeFromWorldPoint(startPos);
         PathNode targetNode = instance.grid.NodeFromWorldPoint(targetPos);
 
-        if (startNode.isWalkable && targetNode.isWalkable)
+        if (startNode.isWalkable && targetNode.isWalkable && (targetNode.worldPosition - startNode.worldPosition).magnitude > 1.5f)
         {
             Heap<PathNode> openSet = new Heap<PathNode>(instance.grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();

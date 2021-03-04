@@ -29,6 +29,7 @@ public class player_main : MonoBehaviour, IsDamagable
 
     #region External Components
     Grid grid;
+    GridField gridField;
     gameManager gm;
     GameObject sprite;
     GameObject cameraObject;
@@ -41,6 +42,7 @@ public class player_main : MonoBehaviour, IsDamagable
     {
         turnActionInput = null;
         initializeCharacter();
+        gridField = FindObjectOfType<GridField>();
         cameraObject = GetComponentInChildren<Camera>().gameObject;
         sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         gm = FindObjectOfType<gameManager>();
@@ -92,6 +94,7 @@ public class player_main : MonoBehaviour, IsDamagable
     void Move(Vector3 changeVector)
     {
         Vector3 newPos = transform.position + changeVector;
+        AlignTo(newPos);
         transform.position = newPos;
         gameObject.GetComponent<Rigidbody2D>().MovePosition(newPos);
 
@@ -104,14 +107,35 @@ public class player_main : MonoBehaviour, IsDamagable
     {
         if (Input.GetKeyDown(KeyCode.Mouse0))
         {
-
+            Vector3 mousePos = cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition);
+            Vector3[] path = Pathfinding.FindPath(transform.position, mousePos);
+            if (path != null)
+            {
+                positionChange = path[0] - transform.position;
+                turnActionInput = "move";
+                if (gridSense.GetGridSensorFromVector(positionChange).isEnemy)
+                {
+                    attack(gridSense.GetGridSensorFromVector(positionChange));
+                    turnActionInput = "attack";
+                }
+            }
+            else if (gridField.NodeFromWorldPoint(mousePos).isWalkable)
+            {
+                positionChange = gridField.NodeFromWorldPoint(mousePos).worldPosition - transform.position;
+                turnActionInput = "move";
+                if (gridSense.GetGridSensorFromVector(positionChange).isEnemy)
+                {
+                    attack(gridSense.GetGridSensorFromVector(positionChange));
+                    turnActionInput = "attack";
+                }
+            }
         }
         if (Input.GetKeyDown(KeyCode.W) && gridSense.topMid.isWall == false)
         {
             if (gridSense.topMid.isEnemy == true)
             {
                 turnActionInput = "attack";
-                attack(gridSense.topMid, 1);
+                attack(gridSense.topMid);
             }
             else
             {
@@ -125,7 +149,7 @@ public class player_main : MonoBehaviour, IsDamagable
             if (gridSense.botMid.isEnemy == true)
             {
                 turnActionInput = "attack";
-                attack(gridSense.botMid, 1);
+                attack(gridSense.botMid);
             }
             else
             {
@@ -136,11 +160,10 @@ public class player_main : MonoBehaviour, IsDamagable
         }
         if (Input.GetKeyDown(KeyCode.D) && gridSense.midRight.isWall == false)
         {
-            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = false;
             if (gridSense.midRight.isEnemy == true)
             {
                 turnActionInput = "attack";
-                attack(gridSense.midRight, 1);
+                attack(gridSense.midRight);
             }
             else
             {
@@ -151,11 +174,10 @@ public class player_main : MonoBehaviour, IsDamagable
         }
         if (Input.GetKeyDown(KeyCode.A) && gridSense.midLeft.isWall == false)
         {
-            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = true;
             if (gridSense.midLeft.isEnemy == true)
             {
                 turnActionInput = "attack";
-                attack(gridSense.midLeft, 1);
+                attack(gridSense.midLeft);
             }
             else
             {
@@ -170,8 +192,9 @@ public class player_main : MonoBehaviour, IsDamagable
         }
 
     }
-    void attack(gridSensor sensor, float attackValue)
+    void attack(gridSensor sensor)
     {
+        AlignTo(sensor.transform.position);
         Attack basicAttack = new Attack(1, "melee", "physical");
         sensor.attackableObject.GetComponent<IsDamagable>().Damage(basicAttack);
         Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.2f);
@@ -201,6 +224,17 @@ public class player_main : MonoBehaviour, IsDamagable
         else
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.white;
+        }
+    }
+    void AlignTo(Vector3 target)
+    {
+        if (target.x > transform.position.x)
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = false; ;
+        }
+        else
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = true; ;
         }
     }
     #endregion

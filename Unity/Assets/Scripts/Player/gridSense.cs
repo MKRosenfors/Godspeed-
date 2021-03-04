@@ -12,4 +12,50 @@ public class gridSense : MonoBehaviour
     public gridSensor botLeft;
     public gridSensor botMid;
     public gridSensor botRight;
+
+    public gridSensor GetGridSensorFromVector(Vector3 relationToPlayer)
+    {
+        if (relationToPlayer.y == 1)
+        {
+            if (relationToPlayer.x == -1)
+            {
+                return topLeft;
+            }
+            if (relationToPlayer.x == 0)
+            {
+                return topMid;
+            }
+            if (relationToPlayer.x == 1)
+            {
+                return topRight;
+            }
+        }
+        if (relationToPlayer.y == 0)
+        {
+            if (relationToPlayer.x == -1)
+            {
+                return midLeft;
+            }
+            if (relationToPlayer.x == 1)
+            {
+                return midRight;
+            }
+        }
+        if (relationToPlayer.y == -1)
+        {
+            if (relationToPlayer.x == -1)
+            {
+                return botLeft;
+            }
+            if (relationToPlayer.x == 0)
+            {
+                return botMid;
+            }
+            if (relationToPlayer.x == 1)
+            {
+                return botRight;
+            }
+        }
+        return null;
+    }
 }

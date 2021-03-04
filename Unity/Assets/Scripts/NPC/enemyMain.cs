@@ -59,6 +59,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
         }
         else if (currentTarget != null)
         {
+            AlignToTarget();
             Attack basicAttack = new Attack(1, "melee", "physical");
             currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
             Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
