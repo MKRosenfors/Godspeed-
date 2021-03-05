@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 758910444637412109}
   - component: {fileID: 7306216230290879304}
   - component: {fileID: 1888223979770470103}
+  - component: {fileID: 7866457254867152775}
   m_Layer: 0
   m_Name: OrckTest
   m_TagString: enemy
@@ -75,7 +76,29 @@ MonoBehaviour:
   hitPoints: 3
   blockChance: 20
   spriteFollowSpeed: 10
+  attackSpriteSpeed: 0
   chasing: 0
+--- !u!50 &7866457254867152775
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8655445565923537775}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 0.0001
+  m_LinearDrag: 0
+  m_AngularDrag: 0
+  m_GravityScale: 0
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 4
 --- !u!1 &8942192297445495949
 GameObject:
   m_ObjectHideFlags: 0

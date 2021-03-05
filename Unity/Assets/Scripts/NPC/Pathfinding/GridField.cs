@@ -6,10 +6,10 @@ using UnityEngine.Tilemaps;
 public class GridField : MonoBehaviour
 {
     public bool displayGridGizmos;
-    //public Transform player;
     public LayerMask unwalkableMask;
     public Vector2 gridWorldSize;
     public float nodeRadius;
+    public GameObject gridBorder;
     PathNode[,] grid;
 
     float nodeDiameter;
@@ -24,6 +24,7 @@ public class GridField : MonoBehaviour
         gridSizeX =Mathf.RoundToInt(gridWorldSize.x / nodeDiameter);
         gridSizeY = Mathf.RoundToInt(gridWorldSize.y / nodeDiameter);
         CreateGrid();
+        DrawGridBorders();
     }
     public int MaxSize
     {
@@ -77,7 +78,20 @@ public class GridField : MonoBehaviour
         int y = Mathf.RoundToInt((gridSizeY - 1) * percentY);
         return grid[x, y];
     }
-
+    private void DrawGridBorders()
+    {
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                if (grid[x, y].isWalkable)
+                {
+                    GameObject newBorder = Instantiate(gridBorder, grid[x, y].worldPosition, gameObject.transform.rotation);
+                    newBorder.transform.parent = gameObject.transform;
+                }
+            }
+        }
+    }
     private void OnDrawGizmos()
     {
         Gizmos.DrawWireCube(transform.position, new Vector3(gridWorldSize.x, gridWorldSize.y));
@@ -86,8 +100,13 @@ public class GridField : MonoBehaviour
             foreach (PathNode n in grid)
             {
                 Gizmos.color = (n.isWalkable) ? Color.white : Color.red;
+                if (n.isOccupied)
+                {
+                    Gizmos.color = Color.green;
+                }
                 Gizmos.DrawCube(n.worldPosition, Vector3.one * (nodeDiameter - .1f));
             }
         }
     }
+
 }

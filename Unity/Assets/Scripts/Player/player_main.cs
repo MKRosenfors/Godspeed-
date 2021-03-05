@@ -28,13 +28,11 @@ public class player_main : MonoBehaviour, IsDamagable
     #endregion
 
     #region External Components
-    Grid grid;
-    GridField gridField;
+    GridField grid;
     gameManager gm;
     GameObject sprite;
     GameObject cameraObject;
 
-    gridSense gridSense;
     #endregion
 
     #region Core Functions
@@ -42,14 +40,13 @@ public class player_main : MonoBehaviour, IsDamagable
     {
         turnActionInput = null;
         initializeCharacter();
-        gridField = FindObjectOfType<GridField>();
+        grid = FindObjectOfType<GridField>();
         cameraObject = GetComponentInChildren<Camera>().gameObject;
         sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         gm = FindObjectOfType<gameManager>();
-        gridSense = FindObjectOfType<gridSense>();
-        grid = FindObjectOfType<Grid>();
         positionX = transform.position.x;
         positionY = transform.position.y;
+        tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
     }
     void Update()
     {
@@ -77,18 +74,26 @@ public class player_main : MonoBehaviour, IsDamagable
 
     void ExecuteTurn()
     {
-        if (turnActionInput == "skip")
+        tools.SetPositionOnGridOccupied(grid, transform.position, null, false);
+
+        if (turnActionInput == "idle")
         {
 
         }
-        if (turnActionInput == "move")
+        else if (turnActionInput == "move")
         {
             Move(positionChange);
         }
-        if (turnActionInput == "attack")
+        else if (turnActionInput == "attack")
         {
 
         }
+        else
+        {
+            print("turn action input not recognized");
+        }
+
+        tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
         gm.PassTurnTo("environment");
     }
     void Move(Vector3 changeVector)
@@ -105,99 +110,169 @@ public class player_main : MonoBehaviour, IsDamagable
     }
     void checkInput()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
+        if (Input.GetKeyDown(KeyCode.Mouse0)) // left mouse button
         {
-            Vector3 mousePos = cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition);
-            Vector3[] path = Pathfinding.FindPath(transform.position, mousePos);
-            if (path != null)
+            if (grid.NodeFromWorldPoint(cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition)).isOccupied) //attack and interact
             {
-                positionChange = path[0] - transform.position;
-                turnActionInput = "move";
-                if (gridSense.GetGridSensorFromVector(positionChange).isEnemy)
+                GameObject target = grid.NodeFromWorldPoint(cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition)).objectOnTile;
+                if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75 && target != gameObject) //attack
                 {
-                    attack(gridSense.GetGridSensorFromVector(positionChange));
+                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
-            }
-            else if (gridField.NodeFromWorldPoint(mousePos).isWalkable)
-            {
-                positionChange = gridField.NodeFromWorldPoint(mousePos).worldPosition - transform.position;
-                turnActionInput = "move";
-                if (gridSense.GetGridSensorFromVector(positionChange).isEnemy)
+                else if (target == gameObject)
                 {
-                    attack(gridSense.GetGridSensorFromVector(positionChange));
+                    turnActionInput = "idle";
+                }
+                if (true)
+                {
+                    // interact
+                }
+
+            } // attack and interact
+            else //move
+            {
+                int pathableNeighbours = 0;
+                foreach (PathNode neighbour in grid.GetNeighbours(grid.NodeFromWorldPoint(transform.position))) //Check neighbours to see if a path is possible or not
+                {
+                    if (neighbour.isOccupied == false && neighbour.isWalkable == true)
+                    {
+                        pathableNeighbours++;
+                    }
+                }
+                if (pathableNeighbours != 0)
+                {
+                    Vector3 mousePos = cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition);
+                    Vector3[] path = Pathfinding.FindPath(transform.position, mousePos);
+                    if (path != null && (mousePos - transform.position).magnitude > 1.75f)
+                    {
+                        positionChange = path[0] - transform.position;
+                        turnActionInput = "move";
+                    }
+                    else if (grid.NodeFromWorldPoint(mousePos).isWalkable)
+                    {
+                        positionChange = grid.NodeFromWorldPoint(mousePos).worldPosition - transform.position;
+                        turnActionInput = "move";
+                    }
+                }
+            } // move
+        } // left mouse button
+        if (Input.GetKeyDown(KeyCode.W))
+        {
+            if (grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z)).isOccupied) // attack and interact
+            {
+                GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z)).objectOnTile;
+                if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
+                {
+                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    attack(target, basicAttack);
                     turnActionInput = "attack";
+                }
+                if (true)
+                {
+                    // interact
+                }
+            } // attack and interact
+            else
+            {
+                Vector3 movePos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+                if (grid.NodeFromWorldPoint(movePos).isWalkable)
+                {
+                    positionChange = grid.NodeFromWorldPoint(movePos).worldPosition - transform.position;
+                    turnActionInput = "move";
                 }
             }
         }
-        if (Input.GetKeyDown(KeyCode.W) && gridSense.topMid.isWall == false)
+        if (Input.GetKeyDown(KeyCode.S))
         {
-            if (gridSense.topMid.isEnemy == true)
+            if (grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y - 1, transform.position.z)).isOccupied) // attack and interact
             {
-                turnActionInput = "attack";
-                attack(gridSense.topMid);
-            }
+                GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y - 1, transform.position.z)).objectOnTile;
+                if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
+                {
+                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    attack(target, basicAttack);
+                    turnActionInput = "attack";
+                }
+                if (true)
+                {
+                    // interact
+                }
+            } // attack and interact
             else
             {
-                positionChange.x = 0;
-                positionChange.y = 1;
-                turnActionInput = "move";
+                Vector3 movePos = new Vector3(transform.position.x, transform.position.y - 1, transform.position.z);
+                if (grid.NodeFromWorldPoint(movePos).isWalkable)
+                {
+                    positionChange = grid.NodeFromWorldPoint(movePos).worldPosition - transform.position;
+                    turnActionInput = "move";
+                }
             }
         }
-        if (Input.GetKeyDown(KeyCode.S) && gridSense.botMid.isWall == false)
+        if (Input.GetKeyDown(KeyCode.D))
         {
-            if (gridSense.botMid.isEnemy == true)
+            if (grid.NodeFromWorldPoint(new Vector3(transform.position.x + 1, transform.position.y, transform.position.z)).isOccupied) // attack and interact
             {
-                turnActionInput = "attack";
-                attack(gridSense.botMid);
-            }
+                GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x + 1, transform.position.y, transform.position.z)).objectOnTile;
+                if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
+                {
+                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    attack(target, basicAttack);
+                    turnActionInput = "attack";
+                }
+                if (true)
+                {
+                    // interact
+                }
+            } // attack and interact
             else
             {
-                positionChange.x = 0;
-                positionChange.y = -1;
-                turnActionInput = "move";
+                Vector3 movePos = new Vector3(transform.position.x + 1, transform.position.y, transform.position.z);
+                if (grid.NodeFromWorldPoint(movePos).isWalkable)
+                {
+                    positionChange = grid.NodeFromWorldPoint(movePos).worldPosition - transform.position;
+                    turnActionInput = "move";
+                }
             }
         }
-        if (Input.GetKeyDown(KeyCode.D) && gridSense.midRight.isWall == false)
+        if (Input.GetKeyDown(KeyCode.A))
         {
-            if (gridSense.midRight.isEnemy == true)
+            if (grid.NodeFromWorldPoint(new Vector3(transform.position.x - 1, transform.position.y, transform.position.z)).isOccupied) // attack and interact
             {
-                turnActionInput = "attack";
-                attack(gridSense.midRight);
-            }
+                GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x - 1, transform.position.y, transform.position.z)).objectOnTile;
+                if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
+                {
+                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    attack(target, basicAttack);
+                    turnActionInput = "attack";
+                }
+                if (true)
+                {
+                    // interact
+                }
+            } // attack and interact
             else
             {
-                positionChange.x = 1;
-                positionChange.y = 0;
-                turnActionInput = "move";
-            }
-        }
-        if (Input.GetKeyDown(KeyCode.A) && gridSense.midLeft.isWall == false)
-        {
-            if (gridSense.midLeft.isEnemy == true)
-            {
-                turnActionInput = "attack";
-                attack(gridSense.midLeft);
-            }
-            else
-            {
-                positionChange.x = -1;
-                positionChange.y = 0;
-                turnActionInput = "move";
+                Vector3 movePos = new Vector3(transform.position.x - 1, transform.position.y, transform.position.z);
+                if (grid.NodeFromWorldPoint(movePos).isWalkable)
+                {
+                    positionChange = grid.NodeFromWorldPoint(movePos).worldPosition - transform.position;
+                    turnActionInput = "move";
+                }
             }
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            turnActionInput = "skip";
+            turnActionInput = "idle";
         }
 
     }
-    void attack(gridSensor sensor)
+    void attack(GameObject target, Attack attack)
     {
-        AlignTo(sensor.transform.position);
-        Attack basicAttack = new Attack(1, "melee", "physical");
-        sensor.attackableObject.GetComponent<IsDamagable>().Damage(basicAttack);
-        Vector3 spriteTargetPos = (transform.position + (sensor.transform.position - transform.position) * 0.2f);
+        AlignTo(target.transform.position);
+        target.GetComponent<IsDamagable>().Damage(attack);
+        Vector3 spriteTargetPos = (transform.position + (target.transform.position - transform.position) * 0.2f);
         StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
     }
     public void Damage(Attack incomingAttack)
@@ -228,6 +303,7 @@ public class player_main : MonoBehaviour, IsDamagable
     }
     void AlignTo(Vector3 target)
     {
+        bool origFlip = gameObject.GetComponentInChildren<SpriteRenderer>().flipX;
         if (target.x > transform.position.x)
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().flipX = false; ;
@@ -235,6 +311,10 @@ public class player_main : MonoBehaviour, IsDamagable
         else
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().flipX = true; ;
+        }
+        if (target.x == transform.position.x)
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = origFlip;
         }
     }
     #endregion

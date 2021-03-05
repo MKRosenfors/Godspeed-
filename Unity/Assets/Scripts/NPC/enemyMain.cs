@@ -12,7 +12,6 @@ public class enemyMain : MonoBehaviour, IsDamagable
     public float attackSpriteSpeed;
 
     public bool chasing;
-    Vector2 position;
     Color damageState;
     float time;
 
@@ -20,11 +19,13 @@ public class enemyMain : MonoBehaviour, IsDamagable
     GameObject currentTarget;
     Vector3[] pathToTarget;
     LayerMask mask;
+    Rigidbody2D rb;
     #endregion
 
     #region External Components
     Grid grid;
     player_main player;
+    GridField gridField;
 
     GameObject sprite;
     #endregion
@@ -32,11 +33,13 @@ public class enemyMain : MonoBehaviour, IsDamagable
     #region Core Funtions
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
+        gridField = FindObjectOfType<GridField>();
         sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         mask = LayerMask.GetMask("unwalkable");
         player = FindObjectOfType<player_main>();
         grid = FindObjectOfType<Grid>();
-        position = transform.position;
+        tools.SetPositionOnGridOccupied(gridField, transform.position, gameObject, true);
     }
     void Update()
     {
@@ -45,8 +48,9 @@ public class enemyMain : MonoBehaviour, IsDamagable
     #endregion
 
     #region Functions
-    public void ExecuteAI(int i)
+    public void ExecuteAI()
     {
+        tools.SetPositionOnGridOccupied(gridField, transform.position, null, false);
         currentTarget = FindClosestVisibleTarget();
         if (targets != null && (targets[0].transform.position - transform.position).magnitude > 1.5)
         {
@@ -65,8 +69,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
             Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
             StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
         }
-
-        
+        tools.SetPositionOnGridOccupied(gridField, transform.position, gameObject, true);
     }
     public void AddTarget(GameObject newTarget)
     {
@@ -108,12 +111,15 @@ public class enemyMain : MonoBehaviour, IsDamagable
         {
             Vector2 origPos = transform.position;
             transform.position = pathToTarget[0];
+            rb.MovePosition(pathToTarget[0]);
+
             sprite.transform.position = origPos;
             StartCoroutine(tools.MoveTo(sprite.transform, pathToTarget[0], spriteFollowSpeed));
         }
     }
     void AlignToTarget()
     {
+        bool origFlip = gameObject.GetComponentInChildren<SpriteRenderer>().flipX;
         if (currentTarget.transform.position.x < transform.position.x)
         {
             sprite.GetComponent<SpriteRenderer>().flipX = true;
@@ -121,6 +127,10 @@ public class enemyMain : MonoBehaviour, IsDamagable
         else
         {
             sprite.GetComponent<SpriteRenderer>().flipX = false;
+        }
+        if (currentTarget.transform.position.x == transform.position.x)
+        {
+            gameObject.GetComponentInChildren<SpriteRenderer>().flipX = origFlip;
         }
     }
     public void Damage(Attack incomingAttack)

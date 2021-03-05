@@ -50,6 +50,8 @@ MonoBehaviour:
     m_Bits: 256
   gridWorldSize: {x: 100, y: 100}
   nodeRadius: 0.5
+  gridBorder: {fileID: 7313641215219139940, guid: c17fd940c361b0f4a955d0c52ca19dd6,
+    type: 3}
   unwalkableMap: {fileID: 0}
 --- !u!114 &6569850925564743471
 MonoBehaviour:

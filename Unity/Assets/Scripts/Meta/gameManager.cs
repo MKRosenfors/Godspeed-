@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Diagnostics;
 
 public class gameManager : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class gameManager : MonoBehaviour
     private List<enemyMain> enemies;
 
     string passTurn;
+    Stopwatch sw;
     #endregion
     #region External Components
     player_main player;
@@ -17,6 +19,7 @@ public class gameManager : MonoBehaviour
     #region Core Functions
     void Start()
     {
+        sw = new Stopwatch();
         InitializeArrays();
         player = FindObjectOfType<player_main>();
         passTurn = "player";
@@ -55,7 +58,11 @@ public class gameManager : MonoBehaviour
     {
         foreach (enemyMain npc in enemies)
         {
-            npc.ExecuteAI(1);
+            sw.Start();
+            npc.ExecuteAI();
+            sw.Stop();
+            print(npc.name + " " +sw.ElapsedMilliseconds + " ms");
+            sw.Reset();
         }
     }
     void CheckDeath()
@@ -65,6 +72,7 @@ public class gameManager : MonoBehaviour
             if (enemies[i].hitPoints <= 0)
             {
                 GameObject deadObject = enemies[i].gameObject;
+                tools.SetPositionOnGridOccupied(FindObjectOfType<GridField>(), deadObject.transform.position, null, false);
                 enemies.Remove(enemies[i]);
                 Destroy(deadObject);
             }

@@ -15,9 +15,6 @@ public class Pathfinding : MonoBehaviour
     }
     public static Vector3[] FindPath(Vector3 startPos, Vector3 targetPos)
     {
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
-
         Vector3[] waypoints = new Vector3[0];
         bool pathSuccess = false;
 
@@ -26,6 +23,19 @@ public class Pathfinding : MonoBehaviour
 
         if (startNode.isWalkable && targetNode.isWalkable && (targetNode.worldPosition - startNode.worldPosition).magnitude > 1.5f)
         {
+            int pathableNeighbours = 0;
+            foreach (PathNode neighbour in instance.grid.GetNeighbours(targetNode)) //Check neighbours to see if a path is possible or not //optimization
+            {
+                if (neighbour.isOccupied == false && neighbour.isWalkable == true)
+                {
+                    pathableNeighbours++;
+                }
+            }
+            if (pathableNeighbours == 0)
+            {
+                return null;
+            }
+
             Heap<PathNode> openSet = new Heap<PathNode>(instance.grid.MaxSize);
             HashSet<PathNode> closedSet = new HashSet<PathNode>();
             openSet.Add(startNode);
@@ -37,14 +47,13 @@ public class Pathfinding : MonoBehaviour
 
                 if (currentNode == targetNode)
                 {
-                    sw.Stop();
                     pathSuccess = true;
                     break;
                 }
 
                 foreach (PathNode neighbour in instance.grid.GetNeighbours(currentNode))
                 {
-                    if (!neighbour.isWalkable || closedSet.Contains(neighbour))
+                    if (neighbour.isWalkable == false || neighbour.isOccupied == true  && neighbour != targetNode || closedSet.Contains(neighbour))
                     {
                         continue;
                     }

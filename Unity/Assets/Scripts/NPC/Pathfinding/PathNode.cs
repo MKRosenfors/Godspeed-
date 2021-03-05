@@ -5,6 +5,8 @@ using UnityEngine;
 public class PathNode : IHeapItem<PathNode>
 {
     public bool isWalkable;
+    public bool isOccupied;
+    public GameObject objectOnTile;
     public Vector3 worldPosition;
     public int gridX;
     public int gridY;

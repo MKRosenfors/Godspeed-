@@ -39,4 +39,17 @@ public static class tools
         }
         objectToMove.position = startPos;
     }
+    public static void SetPositionOnGridWalkable(GridField grid, Vector3 position, bool walkableState)
+    {
+        grid.NodeFromWorldPoint(position).isWalkable = walkableState;
+    }
+    public static void SetPositionOnGridOccupied(GridField grid, Vector3 position , bool occupiedState)
+    {
+        grid.NodeFromWorldPoint(position).isOccupied = occupiedState;
+    }
+    public static void SetPositionOnGridOccupied(GridField grid, Vector3 position, GameObject objectOnTile, bool occupiedState)
+    {
+        grid.NodeFromWorldPoint(position).isOccupied = occupiedState;
+        grid.NodeFromWorldPoint(position).objectOnTile = objectOnTile;
+    }
 }
