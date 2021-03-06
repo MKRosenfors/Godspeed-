@@ -6,6 +6,7 @@ using System.Diagnostics;
 public class gameManager : MonoBehaviour
 {
     #region Variables
+    public List<GameObject> playerFriends;
     private GameObject[] npcArray;
     private List<enemyMain> enemies;
 
@@ -19,7 +20,6 @@ public class gameManager : MonoBehaviour
     #region Core Functions
     void Start()
     {
-        sw = new Stopwatch();
         InitializeArrays();
         player = FindObjectOfType<player_main>();
         passTurn = "player";
@@ -58,11 +58,7 @@ public class gameManager : MonoBehaviour
     {
         foreach (enemyMain npc in enemies)
         {
-            sw.Start();
             npc.ExecuteAI();
-            sw.Stop();
-            print(npc.name + " " +sw.ElapsedMilliseconds + " ms");
-            sw.Reset();
         }
     }
     void CheckDeath()

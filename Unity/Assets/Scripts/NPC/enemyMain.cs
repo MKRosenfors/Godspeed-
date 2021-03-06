@@ -11,9 +11,13 @@ public class enemyMain : MonoBehaviour, IsDamagable
     public float spriteFollowSpeed;
     public float attackSpriteSpeed;
 
+    int lostTrackCounter;
     public bool chasing;
     Color damageState;
     float time;
+    bool hasDestination;
+    Vector3 homeDestination;
+    Vector3 currentDestination;
 
     List<GameObject> targets = new List<GameObject>();
     GameObject currentTarget;
@@ -23,9 +27,9 @@ public class enemyMain : MonoBehaviour, IsDamagable
     #endregion
 
     #region External Components
-    Grid grid;
     player_main player;
-    GridField gridField;
+    GridField grid;
+    gameManager gm;
 
     GameObject sprite;
     #endregion
@@ -33,13 +37,18 @@ public class enemyMain : MonoBehaviour, IsDamagable
     #region Core Funtions
     void Start()
     {
+        gm = FindObjectOfType<gameManager>();
         rb = GetComponent<Rigidbody2D>();
-        gridField = FindObjectOfType<GridField>();
+        grid = FindObjectOfType<GridField>();
         sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         mask = LayerMask.GetMask("unwalkable");
         player = FindObjectOfType<player_main>();
-        grid = FindObjectOfType<Grid>();
-        tools.SetPositionOnGridOccupied(gridField, transform.position, gameObject, true);
+        tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
+
+        hasDestination = false;
+        currentTarget = null;
+        homeDestination = transform.position;
+        lostTrackCounter = 0;
     }
     void Update()
     {
@@ -48,28 +57,79 @@ public class enemyMain : MonoBehaviour, IsDamagable
     #endregion
 
     #region Functions
-    public void ExecuteAI()
+    public void ExecuteAI() //rewrite similar to player
     {
-        tools.SetPositionOnGridOccupied(gridField, transform.position, null, false);
+        tools.SetPositionOnGridOccupied(grid, transform.position, null, false);
+
+        GameObject oldTarget = currentTarget;
         currentTarget = FindClosestVisibleTarget();
-        if (targets != null && (targets[0].transform.position - transform.position).magnitude > 1.5)
+        if (currentTarget != null)
         {
-            if (currentTarget != null)
+            lostTrackCounter = 0;
+        }
+        else if (oldTarget != null && lostTrackCounter <= 2)
+        {
+            lostTrackCounter++;
+            currentTarget = oldTarget;
+        }
+        else
+        {
+            oldTarget = null;
+            lostTrackCounter = 0;
+        }
+
+        if (currentTarget != null)
+        {
+            currentDestination = currentTarget.transform.position;
+            hasDestination = true;
+            if ((currentTarget.transform.position - transform.position).magnitude > 1.5)
             {
-                pathToTarget = Pathfinding.FindPath(transform.position, currentTarget.transform.position);
-                AlignToTarget();
-                Move();
+                pathToTarget = Pathfinding.FindPath(transform.position, currentDestination);
+                AlignToTarget(currentDestination);
+                if (pathToTarget != null)
+                {
+                    Move(pathToTarget[0]);
+                }
+            }
+            else
+            {
+                AlignToTarget(currentTarget.transform.position);
+                Attack basicAttack = new Attack(1, "melee", "physical");
+                currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
+                Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
+                StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
             }
         }
-        else if (currentTarget != null)
+        else if (hasDestination == true)
         {
-            AlignToTarget();
-            Attack basicAttack = new Attack(1, "melee", "physical");
-            currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
-            Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
-            StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
+            if ((currentDestination - transform.position).magnitude > 1.5f)
+            {
+                    pathToTarget = Pathfinding.FindPath(transform.position, currentDestination);
+                    AlignToTarget(currentDestination);
+                    Move(pathToTarget[0]);
+            }
+            else
+            {
+                if (currentDestination != transform.position && grid.NodeFromWorldPoint(currentDestination).isOccupied == false)
+                {
+                    print("tp");
+                    AlignToTarget(currentDestination);
+                    Move(currentDestination);
+                }
+                else
+                {
+                    currentDestination = homeDestination;
+                    hasDestination = true;
+                }
+            }
+
         }
-        tools.SetPositionOnGridOccupied(gridField, transform.position, gameObject, true);
+        else
+        {
+            currentDestination = homeDestination;
+            hasDestination = true;
+        }
+        tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
     }
     public void AddTarget(GameObject newTarget)
     {
@@ -78,21 +138,27 @@ public class enemyMain : MonoBehaviour, IsDamagable
     GameObject FindClosestVisibleTarget()
     {
         GameObject target = null;
-        for (int i = 0; i < targets.Count; i++)
+        for (int i = 0; i < gm.playerFriends.Count; i++)
         {
-            if (Physics.Raycast(transform.position, targets[i].transform.position, Mathf.Infinity, mask) == false)
+            if (Physics2D.Raycast(transform.position, (gm.playerFriends[i].transform.position - transform.position), Vector3.Distance(gm.playerFriends[i].transform.position, transform.position), mask) == false 
+                && Vector3.Distance(transform.position, gm.playerFriends[i].transform.position) <= sightRange
+                || Vector3.Distance(transform.position, gm.playerFriends[i].transform.position) < 1.5f)
             {
                 if (target != null)
                 {
-                    if ((targets[i].transform.position - transform.position).magnitude < (target.transform.position - transform.position).magnitude)
+                    if ((gm.playerFriends[i].transform.position - transform.position).magnitude < (target.transform.position - transform.position).magnitude)
                     {
-                        target = targets[i];
+                        target = gm.playerFriends[i];
                     }
                 }
                 else
                 {
-                    target = targets[i];
+                    target = gm.playerFriends[i];
                 }
+            }
+            else
+            {
+                print("I don't see target " + gameObject.name);
             }
         }
         return target;
@@ -105,22 +171,22 @@ public class enemyMain : MonoBehaviour, IsDamagable
             pathToTarget = newPath;
         }
     }
-    void Move()
+    void Move(Vector3 targetPos)
     {
-        if (pathToTarget!=null && pathToTarget.Length != 0)
+        if (targetPos != null)
         {
             Vector2 origPos = transform.position;
-            transform.position = pathToTarget[0];
-            rb.MovePosition(pathToTarget[0]);
+            transform.position = targetPos;
+            rb.MovePosition(targetPos);
 
             sprite.transform.position = origPos;
-            StartCoroutine(tools.MoveTo(sprite.transform, pathToTarget[0], spriteFollowSpeed));
+            StartCoroutine(tools.MoveTo(sprite.transform, targetPos, spriteFollowSpeed));
         }
     }
-    void AlignToTarget()
+    void AlignToTarget(Vector3 targetLocation)
     {
         bool origFlip = gameObject.GetComponentInChildren<SpriteRenderer>().flipX;
-        if (currentTarget.transform.position.x < transform.position.x)
+        if (targetLocation.x < transform.position.x)
         {
             sprite.GetComponent<SpriteRenderer>().flipX = true;
         }
@@ -128,7 +194,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
         {
             sprite.GetComponent<SpriteRenderer>().flipX = false;
         }
-        if (currentTarget.transform.position.x == transform.position.x)
+        if (targetLocation.x == transform.position.x)
         {
             gameObject.GetComponentInChildren<SpriteRenderer>().flipX = origFlip;
         }

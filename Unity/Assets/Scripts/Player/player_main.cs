@@ -47,6 +47,7 @@ public class player_main : MonoBehaviour, IsDamagable
         positionX = transform.position.x;
         positionY = transform.position.y;
         tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
+        gm.playerFriends.Add(gameObject);
     }
     void Update()
     {
