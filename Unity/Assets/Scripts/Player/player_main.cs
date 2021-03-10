@@ -7,19 +7,24 @@ public class player_main : MonoBehaviour, IsDamagable
     #region Variables
     public float spriteFollowSpeed;
     public float attackSpriteSpeed;
+    [HideInInspector]
     public bool isMyTurn;
-    float positionX;
-    float positionY;
+
+    [SerializeField]
     float strength;
+    [SerializeField]
     float dexterity;
-    float intelligence;
+    [SerializeField]
+    float constitution;
     string characterName;
-    string className;
+    public Class characterClass;
     int level;
     int experiencePoints;
     
     Color damageState;
-    public int blockChance;
+    public int evadeChance;
+    public int parryChance;
+    public float attackValue;
     public float hitPoints;
     float time;
 
@@ -44,8 +49,6 @@ public class player_main : MonoBehaviour, IsDamagable
         cameraObject = GetComponentInChildren<Camera>().gameObject;
         sprite = GetComponentInChildren<SpriteRenderer>().gameObject;
         gm = FindObjectOfType<gameManager>();
-        positionX = transform.position.x;
-        positionY = transform.position.y;
         tools.SetPositionOnGridOccupied(grid, transform.position, gameObject, true);
         gm.playerFriends.Add(gameObject);
     }
@@ -64,13 +67,18 @@ public class player_main : MonoBehaviour, IsDamagable
     #region Functions
     void initializeCharacter()
     {
+        characterClass = Classes.Fighter;
         characterName = character_static.name;
-        className = character_static.s_class;
         level = character_static.level;
         experiencePoints = character_static.experience_points;
-        strength = character_static.strength;
-        dexterity = character_static.dexterity;
-        intelligence = character_static.intelligence;
+        strength = 10 + characterClass.strengthStartMod;
+        dexterity = 10 + characterClass.dexterityStartMod;
+        constitution = 10 + characterClass.constitutionStartMod;
+        hitPoints = 5 + constitution / 2;
+        evadeChance = Mathf.RoundToInt(dexterity * 2);
+        parryChance = Mathf.RoundToInt(strength * 2);
+        attackValue = strength / 10;
+        
     }
 
     void ExecuteTurn()
@@ -118,7 +126,7 @@ public class player_main : MonoBehaviour, IsDamagable
                 GameObject target = grid.NodeFromWorldPoint(cameraObject.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition)).objectOnTile;
                 if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75 && target != gameObject) //attack
                 {
-                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    Attack basicAttack = Attacks.basic_melee;
                     attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
@@ -166,7 +174,7 @@ public class player_main : MonoBehaviour, IsDamagable
                 GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z)).objectOnTile;
                 if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
                 {
-                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    Attack basicAttack = Attacks.basic_melee;
                     attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
@@ -192,7 +200,7 @@ public class player_main : MonoBehaviour, IsDamagable
                 GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x, transform.position.y - 1, transform.position.z)).objectOnTile;
                 if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
                 {
-                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    Attack basicAttack = Attacks.basic_melee;
                     attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
@@ -218,7 +226,7 @@ public class player_main : MonoBehaviour, IsDamagable
                 GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x + 1, transform.position.y, transform.position.z)).objectOnTile;
                 if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
                 {
-                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    Attack basicAttack = Attacks.basic_melee;
                     attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
@@ -244,7 +252,7 @@ public class player_main : MonoBehaviour, IsDamagable
                 GameObject target = grid.NodeFromWorldPoint(new Vector3(transform.position.x - 1, transform.position.y, transform.position.z)).objectOnTile;
                 if (target.GetComponent<IsDamagable>() != null && (target.transform.position - transform.position).magnitude < 1.75) //attack
                 {
-                    Attack basicAttack = new Attack(1, "melee", "physical");
+                    Attack basicAttack = Attacks.basic_melee;
                     attack(target, basicAttack);
                     turnActionInput = "attack";
                 }
@@ -279,7 +287,7 @@ public class player_main : MonoBehaviour, IsDamagable
     public void Damage(Attack incomingAttack)
     {
         int rnd = Random.Range(0, 101);
-        if (rnd > blockChance && incomingAttack.damageSource == "melee")
+        if (rnd > evadeChance + parryChance && incomingAttack.damageSource.melee == true)
         {
             hitPoints -= incomingAttack.damageValue;
             damageState = Color.red;

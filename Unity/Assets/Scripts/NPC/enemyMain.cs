@@ -94,7 +94,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
             else
             {
                 AlignToTarget(currentTarget.transform.position);
-                Attack basicAttack = new Attack(1, "melee", "physical");
+                Attack basicAttack = Attacks.basic_melee;
                 currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
                 Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
                 StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position,spriteTargetPos, attackSpriteSpeed));
@@ -202,7 +202,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
     public void Damage(Attack incomingAttack)
     {
         int rnd = Random.Range(0, 101);
-        if (rnd > blockChance && incomingAttack.damageSource == "melee")
+        if (rnd > blockChance && incomingAttack.damageSource.melee == true)
         {
             hitPoints -= incomingAttack.damageValue;
             damageState = Color.red;
