@@ -274,7 +274,7 @@ public class player_main : MonoBehaviour, IsDamagable
         AlignTo(target.transform.position);
         target.GetComponent<IsDamagable>().Damage(attack);
         Vector3 spriteTargetPos = (transform.position + (target.transform.position - transform.position) * 0.2f);
-        StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
+        StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position, spriteTargetPos, attackSpriteSpeed));
     }
     public void Damage(Attack incomingAttack)
     {

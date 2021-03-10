@@ -97,7 +97,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
                 Attack basicAttack = new Attack(1, "melee", "physical");
                 currentTarget.GetComponent<IsDamagable>().Damage(basicAttack);
                 Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
-                StartCoroutine(tools.MoveToAndBack(sprite.transform, spriteTargetPos, attackSpriteSpeed));
+                StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position,spriteTargetPos, attackSpriteSpeed));
             }
         }
         else if (hasDestination == true)

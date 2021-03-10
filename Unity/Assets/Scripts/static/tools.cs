@@ -16,10 +16,9 @@ public static class tools
         }
         objectToMove.position = endPos;
     }
-    public static IEnumerator MoveToAndBack(Transform objectToMove, Vector3 endPos, float speed)
+    public static IEnumerator MoveToAndBack(Transform objectToMove, Vector3 startPos, Vector3 endPos, float speed)
     {
-        Vector3 startPos = objectToMove.transform.position;
-        float step = (speed / (objectToMove.position - endPos).magnitude) * Time.fixedDeltaTime;
+        float step = (speed / (startPos - endPos).magnitude) * Time.fixedDeltaTime;
         float t = 0;
         while (t <= 1.0f)
         {
