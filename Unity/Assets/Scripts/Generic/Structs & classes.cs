@@ -17,6 +17,15 @@ public class Attack
     }
 }
 
+public class TurnAction
+{
+    public string name;
+    public TurnAction(string _name)
+    {
+        name = _name;
+    }
+}
+
 public class Class
 {
     public string name;

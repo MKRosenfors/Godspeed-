@@ -12,6 +12,15 @@ public static class character_static
     public static float dexterity;
     public static float intelligence;
 }
+public static class TurnActions
+{
+    public static TurnAction Idle = new TurnAction("Idle");
+    public static TurnAction Move = new TurnAction("Move");
+    public static TurnAction Interact = new TurnAction("Interact");
+    public static TurnAction Attack = new TurnAction("Attack");
+    public static TurnAction UseAbility = new TurnAction("UseAbility");
+
+}
 public static class Classes
 {
     public static Class Mage = new Class("Mage", 0, 0, 1, 3, 1, 2);

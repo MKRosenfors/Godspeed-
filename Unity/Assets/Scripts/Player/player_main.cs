@@ -71,6 +71,7 @@ public class player_main : MonoBehaviour, IsDamagable
         characterName = character_static.name;
         level = character_static.level;
         experiencePoints = character_static.experience_points;
+
         strength = 10 + characterClass.strengthStartMod;
         dexterity = 10 + characterClass.dexterityStartMod;
         constitution = 10 + characterClass.constitutionStartMod;
