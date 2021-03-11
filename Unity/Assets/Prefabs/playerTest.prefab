@@ -129,10 +129,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4387f1f9a8c812148b0b62fbf7a2a161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteOffset: {x: 0, y: 0.4, z: 0}
   spriteFollowSpeed: 10
   attackSpriteSpeed: 0
   isMyTurn: 0
-  blockChance: 0
+  strength: 0
+  dexterity: 0
+  constitution: 0
+  evadeChance: 0
+  parryChance: 0
+  attackValue: 0
   hitPoints: 0
 --- !u!50 &3131788474576040746
 Rigidbody2D:

@@ -5,6 +5,7 @@ using UnityEngine;
 public class enemyMain : MonoBehaviour, IsDamagable
 {
     #region Variables
+    public Vector3 spriteOffset;
     public float hitPoints;
     public int blockChance;
     public float spriteFollowSpeed;
@@ -122,12 +123,12 @@ public class enemyMain : MonoBehaviour, IsDamagable
     {
         if (targetPos != null)
         {
-            Vector2 origPos = transform.position;
+            Vector3 origPos = transform.position;
             transform.position = targetPos;
             rb.MovePosition(targetPos);
 
-            sprite.transform.position = origPos;
-            StartCoroutine(tools.MoveTo(sprite.transform, targetPos, spriteFollowSpeed));
+            sprite.transform.position = origPos + spriteOffset;
+            StartCoroutine(tools.MoveTo(sprite.transform, targetPos + spriteOffset, spriteFollowSpeed));
         }
     }
     void Attack(IsDamagable target, Attack attackType)
@@ -137,7 +138,7 @@ public class enemyMain : MonoBehaviour, IsDamagable
             target.Damage(attackType);
 
             Vector3 spriteTargetPos = (transform.position + (currentTarget.transform.position - transform.position) * 0.2f);
-            StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position, spriteTargetPos, attackSpriteSpeed));
+            StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position + spriteOffset, spriteTargetPos + spriteOffset, attackSpriteSpeed));
         }
     }
     public void AddTarget(GameObject newTarget)

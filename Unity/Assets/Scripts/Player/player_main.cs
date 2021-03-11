@@ -5,6 +5,7 @@ using UnityEngine;
 public class player_main : MonoBehaviour, IsDamagable
 {
     #region Variables
+    public Vector3 spriteOffset;
     public float spriteFollowSpeed;
     public float attackSpriteSpeed;
     [HideInInspector]
@@ -113,10 +114,10 @@ public class player_main : MonoBehaviour, IsDamagable
         transform.position = newPos;
         gameObject.GetComponent<Rigidbody2D>().MovePosition(newPos);
 
-        sprite.transform.position = newPos - changeVector;
-        cameraObject.transform.position = new Vector3(newPos.x - changeVector.x, newPos.y - changeVector.y, -10);
-        StartCoroutine(tools.MoveTo(sprite.transform, newPos, spriteFollowSpeed));
-        StartCoroutine(tools.MoveTo(cameraObject.transform, new Vector3(newPos.x, newPos.y, -10), spriteFollowSpeed));
+        sprite.transform.position = newPos - changeVector + spriteOffset;
+        cameraObject.transform.position = new Vector3(newPos.x - changeVector.x, newPos.y - changeVector.y + spriteOffset.y, -10);
+        StartCoroutine(tools.MoveTo(sprite.transform, new Vector3(newPos.x, newPos.y + spriteOffset.y, newPos.z), spriteFollowSpeed));
+        StartCoroutine(tools.MoveTo(cameraObject.transform, new Vector3(newPos.x, newPos.y + spriteOffset.y, -10), spriteFollowSpeed));
     }
     void checkInput()
     {
@@ -283,7 +284,7 @@ public class player_main : MonoBehaviour, IsDamagable
         AlignTo(target.transform.position);
         target.GetComponent<IsDamagable>().Damage(attack);
         Vector3 spriteTargetPos = (transform.position + (target.transform.position - transform.position) * 0.2f);
-        StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position, spriteTargetPos, attackSpriteSpeed));
+        StartCoroutine(tools.MoveToAndBack(sprite.transform, gameObject.transform.position + spriteOffset, spriteTargetPos + spriteOffset, attackSpriteSpeed));
     }
     public void Damage(Attack incomingAttack)
     {
