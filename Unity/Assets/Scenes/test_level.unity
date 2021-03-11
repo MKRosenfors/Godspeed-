@@ -1220,7 +1220,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: 42513fe0b81cfc939af97b099bc67755,
+        type: 3}
     - target: {fileID: 5725354804598485955, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}
       propertyPath: m_Color.b
@@ -1369,7 +1370,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: 053dd9335b19540edbeebdc1b9810e3d,
+        type: 3}
     - target: {fileID: 5725354804598485955, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}
       propertyPath: m_Color.b
@@ -1550,7 +1552,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: 767ad4d5efb97532894ec554a3068b82,
+        type: 3}
     - target: {fileID: 5725354804598485955, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}
       propertyPath: m_Color.b
@@ -1839,7 +1842,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: 4e65a3e0fa6ae32c390155102e4f2a2d,
+        type: 3}
     - target: {fileID: 5725354804598485955, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}
       propertyPath: m_Color.b
@@ -1978,7 +1982,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: f8c81122607965ee68d49d276d2d6159,
+        type: 3}
     - target: {fileID: 3131788475309138422, guid: a31e1516497f13745a1445231f82c527,
         type: 3}
       propertyPath: m_WasSpriteAssigned
@@ -2112,7 +2117,8 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+      objectReference: {fileID: 21300000, guid: 6656a4059d7853f71890c2c9c71eff03,
+        type: 3}
     - target: {fileID: 5725354804598485955, guid: c000cbe2b1fd19747983978f1496ad25,
         type: 3}
       propertyPath: m_Color.b
