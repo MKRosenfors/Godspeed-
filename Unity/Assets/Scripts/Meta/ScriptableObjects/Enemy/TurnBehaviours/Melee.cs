@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-[CreateAssetMenu(fileName = "Melee", menuName = "My Game/Behaviour/Melee")]
+[CreateAssetMenu(fileName = "Melee", menuName = "My Game/Enemy/Behaviours/Melee")]
 public class Melee : TurnBehaviour
 {
     public override TurnAction MakeDecision(enemyMain actor, GameObject target)
